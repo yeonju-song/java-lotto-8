@@ -94,7 +94,33 @@ public class Application {
         return Integer.parseInt(Console.readLine());
     }
 
-    //당첨 통계 출력
+    //당첨 통계 출력 --> enum개념 활용
+    private static Map<Rank, Integer> calculateResults(List<Lotto> lottotickets, List<Integer> winningNumbers, int bonusNumber) {
+        Map<Rank, Integer> results = new LinkedHashMap<>();
+        for (Rank rank : Rank.values()) results.put(rank, 0);
+        for (Lotto lottoticket : lottotickets) {
+            long matchCount = lottoticket.getNumbers().stream().filter(winningNumbers::contains).count();
+            if (matchCount == 6) {
+                results.put(Rank.FIRST, results.get(Rank.FIRST) + 1);
+            }
+            if (matchCount ==5 && lottoticket.getNumbers().contains(bonusNumber)) {
+                results.put(Rank.SECOND, results.get(Rank.SECOND) + 1);
+            }
+            if (matchCount ==5) {
+                results.put(Rank.THIRD, results.get(Rank.THIRD) + 1);
+            }
+            if (matchCount == 4) {
+                results.put(Rank.FOURTH, results.get(Rank.FOURTH) + 1);
+            }
+            if (matchCount == 3) {
+                results.put(Rank.FIFTH, results.get(Rank.FIFTH) + 1);
+            }
+        }
+        return results;
+    }
 
     //수익률 계산
+    private static void calculateProfit(Map<Rank, Integer> results, int money) {
+
+    }
 }
