@@ -3,10 +3,7 @@ package lotto;
 import camp.nextstep.edu.missionutils.Console;
 import camp.nextstep.edu.missionutils.Randoms;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Application {
@@ -19,12 +16,21 @@ public class Application {
 
     //구입금액 입력
     private static int inputMoney() {
-        System.out.println("구입금액을 입력해 주세요.");
-        int money = Integer.parseInt(Console.readLine());
-        if (money % 1000 != 0) {
-            throw new IllegalArgumentException("[ERROR] 구입 금액은 1,000원 단위여야 합니다.");
+        while (true) {
+            try {
+                System.out.println("구입금액을 입력해 주세요.");
+                int money = Integer.parseInt(Console.readLine());
+                if (money <= 0 || money % 1000 != 0) {
+                    throw new IllegalArgumentException("[ERROR] 구입 금액은 1,000원 단위여야 합니다.");
+                }
+                return money;
+            } catch (NumberFormatException e) {
+                System.out.println("숫자를 입력해야 합니다. 다시 입력 해주세요.");
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage() + " 다시 입력 해주세요.");
+            }
         }
-        return money;
+
     }
 
     //각 로또의 번호를 랜덤으로 생성
@@ -47,18 +53,48 @@ public class Application {
 
     //당첨번호 입력
     private static List<Integer> inputWinningNumbers() {
-        System.out.println("당첨 번호를 입력해 주세요.");
-        return Arrays.stream(Console.readLine().split(","))
-                .map(String::trim)
-                .map(Integer::parseInt)
-                .collect(Collectors.toList());
+        while (true) {
+            try {
+                System.out.println("당첨 번호를 입력해 주세요.");
+                List<Integer> winningNumbers = Arrays.stream(Console.readLine().split(","))
+                        .map(String::trim)
+                        .map(Integer::parseInt)
+                        .collect(Collectors.toList());
+
+                validateWinningNumbers(winningNumbers);
+                Collections.sort(winningNumbers);
+                return winningNumbers;
+            }catch (NumberFormatException e) {
+                System.out.println("숫자를 입력해야 합니다. 다시 입력 해주세요.");
+            }catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage() + " 다시 입력 해주세요.");
+            }
+        }
     }
 
-    //보너스 번호 입력
+    //당첨번호 검증하기
+    private static void validateWinningNumbers(List<Integer> winningNumbers) {
+        if (winningNumbers.size() != 6) {
+            throw new IllegalArgumentException("숫자 6개를 입력해주세요.");
+        }
+        Set<Integer> set = new HashSet<>(winningNumbers);
+        if (set.size() != 6) {
+            throw new IllegalArgumentException("숫자가 중복되었습니다. 다시 입력 해주세요.");
+        }
+        for(int number : set) {
+            if (number < 1 || number > 45) {
+                throw new IllegalArgumentException("숫자는 1-45 사이여야 합니다.");
+            }
+        }
+    }
+
+    //보너스 번호 입력 --> 2등을 위해
     private static int inputBonusNumber() {
         System.out.println("보너스 번호를 입력해 주세요.");
         return Integer.parseInt(Console.readLine());
     }
 
+    //당첨 통계 출력
 
+    //수익률 계산
 }
