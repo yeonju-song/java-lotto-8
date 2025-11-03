@@ -9,9 +9,16 @@ import java.util.stream.Collectors;
 public class Application {
     public static void main(String[] args) {
         int money = inputMoney();
-        int count = money / 1000; //주어진금액으로 살 수 있는 로또 장수 계산
+        List<Lotto> lottotickets = makeLottoNumbers(money / 1000);
+        printLottoTickets(lottotickets);
 
+        List<Integer> winningNumbers = inputWinningNumbers();
+        int bonusNumber = inputBonusNumber(winningNumbers);
 
+        Map<Rank, Integer> ranks = calculateResults(lottotickets, winningNumbers, bonusNumber);
+
+        printResults(ranks);
+        calculateProfit(ranks, money);
     }
 
     //구입금액 입력
@@ -45,6 +52,7 @@ public class Application {
 
     //로또 장수와 번호를 출력
     private static void printLottoTickets(List<Lotto> lottotickets) {
+        System.out.println();
         System.out.println(lottotickets.size() + "개를 구매했습니다.");
         for (Lotto lottoticket : lottotickets) {
             System.out.println(lottoticket.getNumbers());
@@ -55,6 +63,7 @@ public class Application {
     private static List<Integer> inputWinningNumbers() {
         while (true) {
             try {
+                System.out.println();
                 System.out.println("당첨 번호를 입력해 주세요.");
                 List<Integer> winningNumbers = Arrays.stream(Console.readLine().split(","))
                         .map(String::trim)
@@ -89,38 +98,78 @@ public class Application {
     }
 
     //보너스 번호 입력 --> 2등을 위해
-    private static int inputBonusNumber() {
-        System.out.println("보너스 번호를 입력해 주세요.");
-        return Integer.parseInt(Console.readLine());
+    private static int inputBonusNumber(List<Integer> winningNumbers) {
+        while (true) {
+            try {
+                System.out.println();
+                System.out.println("보너스 번호를 입력해 주세요.");
+                int bonusNumber = Integer.parseInt(Console.readLine().trim());
+
+                if (bonusNumber < 1 || bonusNumber > 45) {
+                    throw new IllegalArgumentException("숫자는 1-45 사이여야 합니다.");
+                }
+                if (winningNumbers.contains(bonusNumber)) {
+                    throw new IllegalArgumentException("보너스 번호는 당첨 번호와 중복되면 안됩니다.");
+                }
+
+                return bonusNumber;
+            }catch (NumberFormatException e) {
+                System.out.println("숫자를 입력해야 합니다. 다시 입력 해주세요.");
+            }catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage() + "다시 입력해주세요.");
+            }
+        }
     }
 
-    //당첨 통계 출력 --> enum개념 활용
+    //당첨 통계 로직 --> enum개념 활용
     private static Map<Rank, Integer> calculateResults(List<Lotto> lottotickets, List<Integer> winningNumbers, int bonusNumber) {
         Map<Rank, Integer> results = new LinkedHashMap<>();
-        for (Rank rank : Rank.values()) results.put(rank, 0);
+        for (Rank rank : Rank.values()) {
+            results.put(rank, 0);
+        }
         for (Lotto lottoticket : lottotickets) {
             long matchCount = lottoticket.getNumbers().stream().filter(winningNumbers::contains).count();
-            if (matchCount == 6) {
-                results.put(Rank.FIRST, results.get(Rank.FIRST) + 1);
-            }
-            if (matchCount ==5 && lottoticket.getNumbers().contains(bonusNumber)) {
-                results.put(Rank.SECOND, results.get(Rank.SECOND) + 1);
-            }
-            if (matchCount ==5) {
-                results.put(Rank.THIRD, results.get(Rank.THIRD) + 1);
+            if (matchCount == 3) {
+                results.put(Rank.FIFTH, results.get(Rank.FIFTH) + 1);
             }
             if (matchCount == 4) {
                 results.put(Rank.FOURTH, results.get(Rank.FOURTH) + 1);
             }
-            if (matchCount == 3) {
-                results.put(Rank.FIFTH, results.get(Rank.FIFTH) + 1);
+            if (matchCount ==5 && !lottoticket.getNumbers().contains(bonusNumber)) {
+                results.put(Rank.THIRD, results.get(Rank.THIRD) + 1);
+            }
+            if (matchCount ==5 && lottoticket.getNumbers().contains(bonusNumber)) {
+                results.put(Rank.SECOND, results.get(Rank.SECOND) + 1);
+            }
+            if (matchCount == 6) {
+                results.put(Rank.FIRST, results.get(Rank.FIRST) + 1);
             }
         }
         return results;
     }
 
-    //수익률 계산
-    private static void calculateProfit(Map<Rank, Integer> results, int money) {
+    //당첨 통계 출력
+    private static void printResults(Map<Rank, Integer> results) {
+        System.out.println();
+        System.out.println("당첨 통계");
+        System.out.println("---");
 
+        Arrays.stream(Rank.values())
+                .sorted(Comparator.comparingInt(Rank::getOrder))
+                .forEach(rank ->
+                        System.out.println(rank.getName() + " - " + results.get(rank) + "개"));
+    }
+
+    //수익률 계산 & 출력
+    private static void calculateProfit(Map<Rank, Integer> results, int money) {
+        long totalProfit = 0;
+
+        for (Rank rank : Rank.values() ) { //등수별 당첨금 누적
+            totalProfit += results.get(rank) * rank.getValue();
+        }
+
+        double rate = ((double) totalProfit / money) * 100;
+        rate = Math.round(rate * 100) / 100.0;
+        System.out.println("총 수익률은 " + rate + "%입니다.");
     }
 }
