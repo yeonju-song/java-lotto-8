@@ -32,7 +32,7 @@ public class Application {
                 }
                 return money;
             } catch (NumberFormatException e) {
-                System.out.println("숫자를 입력해야 합니다. 다시 입력 해주세요.");
+                System.out.println("[ERROR] 숫자를 입력해야 합니다. 다시 입력 해주세요.");
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage() + " 다시 입력 해주세요.");
             }
@@ -47,7 +47,7 @@ public class Application {
             List<Integer> numbers = Randoms.pickUniqueNumbersInRange(1, 45, 6); //단순히 랜덤으로 뽑음
             lottotickets.add(new Lotto(numbers)); //모든 로또티켓의 숫자들의 정렬, 검증, 출력을 Lotto.java에서 담당
         }
-        return  lottotickets;
+        return lottotickets;
     }
 
     //로또 장수와 번호를 출력
@@ -74,7 +74,7 @@ public class Application {
                 Collections.sort(winningNumbers);
                 return winningNumbers;
             }catch (NumberFormatException e) {
-                System.out.println("숫자를 입력해야 합니다. 다시 입력 해주세요.");
+                System.out.println("[ERROR] 숫자를 입력해야 합니다. 다시 입력 해주세요.");
             }catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage() + " 다시 입력 해주세요.");
             }
@@ -88,11 +88,11 @@ public class Application {
         }
         Set<Integer> set = new HashSet<>(winningNumbers);
         if (set.size() != 6) {
-            throw new IllegalArgumentException("숫자가 중복되었습니다. 다시 입력 해주세요.");
+            throw new IllegalArgumentException("[ERROR] 숫자가 중복되었습니다. 다시 입력 해주세요.");
         }
         for(int number : set) {
             if (number < 1 || number > 45) {
-                throw new IllegalArgumentException("숫자는 1-45 사이여야 합니다.");
+                throw new IllegalArgumentException("[ERROR] 숫자는 1-45 사이여야 합니다.");
             }
         }
     }
@@ -106,15 +106,15 @@ public class Application {
                 int bonusNumber = Integer.parseInt(Console.readLine().trim());
 
                 if (bonusNumber < 1 || bonusNumber > 45) {
-                    throw new IllegalArgumentException("숫자는 1-45 사이여야 합니다.");
+                    throw new IllegalArgumentException("[ERROR] 숫자는 1-45 사이여야 합니다.");
                 }
                 if (winningNumbers.contains(bonusNumber)) {
-                    throw new IllegalArgumentException("보너스 번호는 당첨 번호와 중복되면 안됩니다.");
+                    throw new IllegalArgumentException("[ERROR] 보너스 번호는 당첨 번호와 중복되면 안됩니다.");
                 }
 
                 return bonusNumber;
             }catch (NumberFormatException e) {
-                System.out.println("숫자를 입력해야 합니다. 다시 입력 해주세요.");
+                System.out.println("[ERROR] 숫자를 입력해야 합니다. 다시 입력 해주세요.");
             }catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage() + "다시 입력해주세요.");
             }
@@ -122,7 +122,7 @@ public class Application {
     }
 
     //당첨 통계 로직 --> enum개념 활용
-    private static Map<Rank, Integer> calculateResults(List<Lotto> lottotickets, List<Integer> winningNumbers, int bonusNumber) {
+    public static Map<Rank, Integer> calculateResults(List<Lotto> lottotickets, List<Integer> winningNumbers, int bonusNumber) {
         Map<Rank, Integer> results = new LinkedHashMap<>();
         for (Rank rank : Rank.values()) {
             results.put(rank, 0);
@@ -161,7 +161,7 @@ public class Application {
     }
 
     //수익률 계산 & 출력
-    private static void calculateProfit(Map<Rank, Integer> results, int money) {
+    public static void calculateProfit(Map<Rank, Integer> results, int money) {
         long totalProfit = 0;
 
         for (Rank rank : Rank.values() ) { //등수별 당첨금 누적

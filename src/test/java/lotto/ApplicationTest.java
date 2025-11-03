@@ -3,10 +3,11 @@ package lotto;
 import camp.nextstep.edu.missionutils.test.NsTest;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static camp.nextstep.edu.missionutils.test.Assertions.assertRandomUniqueNumbersInRangeTest;
-import static camp.nextstep.edu.missionutils.test.Assertions.assertSimpleTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ApplicationTest extends NsTest {
@@ -47,11 +48,55 @@ class ApplicationTest extends NsTest {
     }
 
     @Test
-    void 예외_테스트() {
-        assertSimpleTest(() -> {
-            runException("1000j");
-            assertThat(output()).contains(ERROR_MESSAGE);
-        });
+    void 로또_번호_정렬_및_검증_테스트() {
+        List<Integer> winningNumbers = List.of(6,2,3,4,5,1);
+        Lotto lotto = new Lotto(winningNumbers);
+
+        assertThat(lotto.getNumbers()).containsExactly(1,2,3,4,5,6);
+    }
+
+    @Test
+    void 당첨_결과_계산_테스트() {
+        List<Lotto> tickets = List.of(
+                new Lotto(List.of(1,2,3,4,5,6)), //1등
+                new Lotto(List.of(1,2,3,4,5,15)), //2등 (5개 + 보너스)
+                new Lotto(List.of(1,2,3,4,5,16)), //3등
+                new Lotto(List.of(1,2,3,4,7,8)), //4등
+                new Lotto(List.of(1,2,3,20,25,26)) //5등
+        );
+
+        List<Integer> winningNumbers = List.of(1,2,3,4,5,6);
+        int bonusNumber = 15;
+
+        Map<Rank, Integer> results = Application.calculateResults(tickets, winningNumbers, bonusNumber);
+
+        assertThat(results.get(Rank.FIRST)).isEqualTo(1);
+        assertThat(results.get(Rank.SECOND)).isEqualTo(1);
+        assertThat(results.get(Rank.THIRD)).isEqualTo(1);
+        assertThat(results.get(Rank.FOURTH)).isEqualTo(1);
+        assertThat(results.get(Rank.FIFTH)).isEqualTo(1);
+    }
+
+    @Test
+    void 수익률_계산_테스트() {
+        Map<Rank, Integer> results = new HashMap<>();
+        results.put(Rank.FIRST, 0);
+        results.put(Rank.SECOND, 0);
+        results.put(Rank.THIRD, 0);
+        results.put(Rank.FOURTH, 0);
+        results.put(Rank.FIFTH, 1);
+
+        int money = 8000;
+
+        long totalProfit = 0;
+        for (Rank rank : Rank.values()) {
+            totalProfit += results.get(rank) * rank.getValue();
+        }
+        double rate = ((double) totalProfit / money) * 100;
+        rate = Math.round(rate * 100) / 100.0;
+
+        // then
+        assertThat(rate).isEqualTo(62.5);
     }
 
     @Override

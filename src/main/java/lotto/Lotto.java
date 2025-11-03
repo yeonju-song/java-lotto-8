@@ -1,6 +1,7 @@
 package lotto;
 //로또 한장이 가지는 번호, 검증, 출력 기능을 여기서 책임
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,8 +11,9 @@ public class Lotto {
     // 로또 번호 저장
     public Lotto(List<Integer> numbers) {
         validate(numbers); //유효성 검사
-        Collections.sort(numbers); //오름차순으로 정리
-        this.numbers = numbers;
+        List<Integer> sortedNumbers = new ArrayList<>(numbers);
+        Collections.sort(sortedNumbers); //오름차순으로 정리
+        this.numbers = Collections.unmodifiableList(sortedNumbers);
     }
 
     // 로또 번호 검증 (번호 6개 확인, 번호 중복 불가, 번호는 1부터 45 사이의 숫자)
